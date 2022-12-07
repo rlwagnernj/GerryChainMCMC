@@ -1,1 +1,4 @@
 .DS_Store
+__pycashe__/
+.ipynb_checkpoints
+
