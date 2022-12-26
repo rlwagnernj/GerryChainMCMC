@@ -111,7 +111,7 @@ def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
     # subpop_over_threshold tracks the number of districts above a threshold value for a defined subpopulation. 
     def subpop_over_threshold(partition):
         count_over = 0
-        alpha = 0.5# Arbitrarily defined threshold
+        alpha = 0.5 # Arbitrarily defined threshold
         for dist in partition['population']:
             # whatever this first term is needs to be an updater in my updaters so the constraint validator can look for it
             if partition['subpop'][dist] / partition['population'][dist] >= alpha:
@@ -174,7 +174,6 @@ def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
     # Prebuilt contiguity constraint
     contiguity = constraints.contiguous
 
-
     # # Prebuilt constraint that refuses partitions that created new county splits.
     # county_limit = constraints.refuse_new_splits("county_info")
 
@@ -198,10 +197,10 @@ def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
     ) 
     
     print('0')
-    return (graph, chain)
+    return (graph, chain, al_gdf)
 
 
-def RunGerryChain(Graph, Chain, VTD_Data='', Checkpoint = None, Print_Iterations = False, Output_Csv = '', Output_Metadata = '', Output_Seg=''):
+def RunGerryChain(GDF, Graph, Chain, VTD_Data='', Checkpoint = None, Print_Iterations = False, Output_Csv = '', Output_Metadata = '', Output_Seg=''):
     """Returns (chain_list, metadata_list)"""
 
     ##########################################################################################################################################################################
@@ -217,7 +216,8 @@ def RunGerryChain(Graph, Chain, VTD_Data='', Checkpoint = None, Print_Iterations
 
     chain_list_all = []
     metadata_list_all = []
-    seg_df = pd.DataFrame()
+    seg_df = pd.DataFrame(index=GDF["cd_117"].unique())
+    print(seg_df)
 
     Output_Csv = Output_Csv + '_0'
     Output_Metadata = Output_Metadata + '_0'
@@ -231,6 +231,7 @@ def RunGerryChain(Graph, Chain, VTD_Data='', Checkpoint = None, Print_Iterations
         meta_dict = {"Iteration": count}
 
         if Print_Iterations is True:
+
             print("Iteration " + str(count)) # uncomment line if you want to watch the progress
 
         # Storing all the metadata. I tried to find a better way to code this, but I ended up just hardcoding it in.
@@ -257,7 +258,7 @@ def RunGerryChain(Graph, Chain, VTD_Data='', Checkpoint = None, Print_Iterations
             if count % Checkpoint == 0:
                 
                 seg_output = SegregationOutput(VTD_Data=VTD_Data,Chain_List=chain_list,Output_Seg = Output_Seg)
-                seg_df = pd.concat([seg_df, seg_output], axis='columns')
+                seg_df = seg_df.merge(right=seg_output, left_index=True, right_index=True)
 
                 GerryChainOutput(Chain_List=chain_list, Metadata_List=metadata_list, Output_Csv=Output_Csv, Output_Metadata=Output_Metadata)
 
