@@ -28,7 +28,7 @@ import geopandas as gpd # "Extends the datatypes used by pandas to allow spatial
 from scipy.stats import beta
 
 
-def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
+def GerryChainSetUp(Input_Shp = '', Total_Steps = 0, Input_Gdf = None):
     """Function to run the MCMC algorithm
         Input_File = string path to shp file & associated data
         Total_Step = number of iterations to run (int)
@@ -38,7 +38,7 @@ def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
     # RELEVANT FILES #
     ######################################################################################################################################################################################################
 
-    if Input_Shp != '':
+    if Input_Gdf is None:
         # Path to the source file of your vtds
         # If using a shapefile, point to .shp. All connected shapefiles you want to use must be in same directory
         input_file = Input_Shp
@@ -62,6 +62,11 @@ def GerryChainSetUp(Input_Shp = '', Total_Steps = 0):
                                                                         # "Ignore all invalid geometries and attempt to create the graph anyway"
                                                     
         graph = graph_AL
+
+    else: 
+
+        al_gdf = Input_Gdf
+        graph = Graph.from_geodataframe(al_gdf, ignore_errors=True)
 
     #######################################################################################################################################################################################################
     # UPDATERS #
@@ -217,7 +222,6 @@ def RunGerryChain(GDF, Graph, Chain, VTD_Data='', Checkpoint = None, Print_Itera
     chain_list_all = []
     metadata_list_all = []
     seg_df = pd.DataFrame(index=GDF["cd_117"].unique())
-    print(seg_df)
 
     Output_Csv = Output_Csv + '_0'
     Output_Metadata = Output_Metadata + '_0'
