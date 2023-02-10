@@ -219,9 +219,9 @@ def RunGerryChain(GDF, Graph, Chain, VTD_Data='', Checkpoint = 1, Print_Iteratio
     tot_num_edges = Graph.number_of_edges() #will be used to calculate proportion of edges not cut
     start_time = time.time()
 
-    Output_Csv = Output_Csv + '_0'
-    Output_Metadata = Output_Metadata + '_0'
-    Output_Seg = Output_Seg + '_0'
+    Output_Csv_c = Output_Csv + '_0'
+    Output_Metadata_c = Output_Metadata + '_0'
+    Output_Seg_c = Output_Seg + '_0'
 
     # The Chain itself
     for partition in Chain:
@@ -253,8 +253,8 @@ def RunGerryChain(GDF, Graph, Chain, VTD_Data='', Checkpoint = 1, Print_Iteratio
  
         if count % Checkpoint == 0:
 
-            GerryChainOutput(Chain_List=chain_list, Metadata_List=metadata_list, Output_Csv=Output_Csv, Output_Metadata=Output_Metadata)
-            SegregationOutput(VTD_Data=VTD_Data,Chain_List=chain_list,Output_Seg = Output_Seg)
+            GerryChainOutput(Chain_List=chain_list, Metadata_List=metadata_list, Output_Csv=Output_Csv_c, Output_Metadata=Output_Metadata_c)
+            SegregationOutput(VTD_Data=VTD_Data,Chain_List=chain_list,Output_Seg = Output_Seg_c)
 
 
             # Reset
@@ -262,16 +262,16 @@ def RunGerryChain(GDF, Graph, Chain, VTD_Data='', Checkpoint = 1, Print_Iteratio
             chain_list = []
             metadata_list = []
 
-            Output_Csv = Output_Csv[:-2] + '_' + str(count)
-            Output_Metadata = Output_Metadata[:-2] + '_' + str(count)
-            Output_Seg = Output_Seg[:-2] + '_' + str(count)
+            Output_Csv_c = Output_Csv + '_' + str(count)
+            Output_Metadata_c = Output_Metadata + '_' + str(count)
+            Output_Seg_c = Output_Seg + '_' + str(count)
 
     end_time = time.time()
 
     print("\nChain complete. Time elapsed: " + str(end_time-start_time) + " seconds.")
 
     print('0')
-    return (chain_list, metadata_list, part_dict, seg_output)
+    return (chain_list, metadata_list, part_dict)
 
 
 
