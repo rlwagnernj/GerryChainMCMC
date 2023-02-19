@@ -1,5 +1,5 @@
 
-from RunGerryChainDefs_v3 import * 
+from RunGerryChainDefs_v4 import * 
 
 from glob import glob
 from datetime import datetime as dt
@@ -33,8 +33,8 @@ def get_recent_files():
 def time_stamp():
     return str(dt.now()).replace(' ', '-').replace(':', '-').replace('.', '-')
 
-def init(shp):
-    return InitializeGerryChain(shp=shp) 
+def init(graph):
+    return InitializeGerryChain(graph=graph) 
 
 
 def save_output(chain_list, metadata_list, cur_seed, seed_filename=None):
@@ -83,11 +83,16 @@ def get_next_partition():
 ######################################################################################################################################################################################################
 
 if __name__ == "__main__":
+    '''pass None for shp if not first branch'''
 
-    FLAG_DATA, PATH_OUT, INITIAL_SEED, SHP = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    FLAG_DATA, PATH_OUT, SEED, SHP = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
     # Make sure the output directory exists, create it if not 
     if not os.path.exists(PATH_OUT):
         os.mkdir(PATH_OUT)
 
-    print("good!")
+    gdf = None
+
+    graph = MakeGraph(SHP, gdf)
+    partition, proposal, constraint = init(graph)
+    run_branch(partition=partition, proposal=proposal, constraint=constraint, steps=100, seed=SEED, print_iterations=True)
