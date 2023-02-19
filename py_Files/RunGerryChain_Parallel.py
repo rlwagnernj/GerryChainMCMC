@@ -1,0 +1,93 @@
+
+from RunGerryChainDefs_v3 import * 
+
+from glob import glob
+from datetime import datetime as dt
+
+import sys
+import os
+
+######################################################################################################################################################################################################
+
+#FLAG_DATA  = 'MyResults'     # File name header to identify only simulation data files (nothing else should start with this string)
+#PATH_OUT   = 'out'           # Directory to save the output
+#INITIAL_SEED = 1
+
+# Input Files
+#shp = '' # file path to shp file 
+
+######################################################################################################################################################################################################
+
+def get_files():
+    pattern = os.path.join(PATH_OUT, FLAG_DATA + '*')
+    files = glob(pattern)
+    return files
+
+def get_recent_files():
+    '''Get the most recently used files (judged by how long the sequence of seeds in the filename is)'''
+    f = np.array(get_files())
+    counts = np.array([fi.count('.') for fi in f])
+    idx = counts == counts.max()
+    return list(f[idx])
+
+def time_stamp():
+    return str(dt.now()).replace(' ', '-').replace(':', '-').replace('.', '-')
+
+def init(shp):
+    return InitializeGerryChain(shp=shp) 
+
+
+def save_output(chain_list, metadata_list, cur_seed, seed_filename=None):
+    
+    if seed_filename is not None:
+        # Get the random seed history from the filename
+        seed_hist = seed_filename.split('_')[1]
+        # Append the current seed to the seed history
+        seed_hist = seed_hist + '.' + str(cur_seed)
+    else:
+        seed_hist = str(cur_seed)
+
+    # Build the new filename
+    chain_file_name = FLAG_DATA + '_assignments_' + seed_hist + '_' + time_stamp()
+    meta_file_name = FLAG_DATA + '_metadata_' + seed_hist + '_' + time_stamp()
+
+    chain_file_name = os.path.join(PATH_OUT, chain_file_name)
+    meta_file_name = os.path.join(PATH_OUT, meta_file_name)
+
+    np.savetxt(chain_file_name, chain_list) # Do I need to change the form of the list?
+    np.savetxt(meta_file_name, metadata_list)
+
+######################################################################################################################################################################################################
+
+def test():
+    print('yes!')
+
+def run_branch(partition, proposal, constraint, steps, seed, print_iterations = False):
+    
+    # run a chain
+    chain_list, metadata_list = RunChain(partition = partition, proposal = proposal, constraint = constraint, steps = steps, seed = seed, print_iterations = print_iterations)
+    # save the output
+    save_output(chain_list = chain_list, metadata_list = metadata_list)
+
+def get_next_partition():
+
+    files = get_recent_files()
+    num_files = len(files)
+
+    for i in range(num_files):
+        f = files[i]
+
+        # now we pull the last assignment from each map
+        # and make the new partition
+
+######################################################################################################################################################################################################
+
+if __name__ == "__main__":
+
+    FLAG_DATA, PATH_OUT, INITIAL_SEED, SHP = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+
+    # Make sure the output directory exists, create it if not 
+    if not os.path.exists(PATH_OUT):
+        os.mkdir(PATH_OUT)
+
+    print("good!")
