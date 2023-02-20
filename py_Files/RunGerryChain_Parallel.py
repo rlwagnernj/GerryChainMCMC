@@ -54,20 +54,17 @@ def save_output(chain_list, metadata_list, cur_seed, seed_filename=None):
     chain_file_name = os.path.join(PATH_OUT, chain_file_name)
     meta_file_name = os.path.join(PATH_OUT, meta_file_name)
 
-    np.savetxt(chain_file_name, chain_list) # Do I need to change the form of the list?
-    np.savetxt(meta_file_name, metadata_list)
+    np.savetxt(chain_file_name, chain_list, fmt='%s') # Do I need to change the form of the list?
+    np.savetxt(meta_file_name, metadata_list, fmt='%s')
 
 ######################################################################################################################################################################################################
 
-def test():
-    print('yes!')
-
-def run_branch(partition, proposal, constraint, steps, seed, print_iterations = False):
+def run_branch(graph, partition, proposal, constraint, steps, seed = int, print_iterations = True):
     
     # run a chain
-    chain_list, metadata_list = RunChain(partition = partition, proposal = proposal, constraint = constraint, steps = steps, seed = seed, print_iterations = print_iterations)
+    chain_list, metadata_list = RunChain(graph = graph, partition = partition, proposal = proposal, constraint = constraint, steps = steps, seed = seed, print_iterations = print_iterations)
     # save the output
-    save_output(chain_list = chain_list, metadata_list = metadata_list)
+    save_output(chain_list = chain_list, metadata_list = metadata_list, cur_seed=seed)
 
 def get_next_partition():
 
@@ -94,5 +91,5 @@ if __name__ == "__main__":
     gdf = None
 
     graph = MakeGraph(SHP, gdf)
-    partition, proposal, constraint = init(graph)
-    run_branch(partition=partition, proposal=proposal, constraint=constraint, steps=100, seed=SEED, print_iterations=True)
+    graph, partition, proposal, constraint = init(graph)
+    run_branch(graph = graph, partition=partition, proposal=proposal, constraint=constraint, steps=100, seed=SEED, print_iterations=True)

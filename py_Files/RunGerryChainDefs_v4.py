@@ -115,7 +115,7 @@ def InitializeGerryChain(graph):
     # Selecting/defining updaters that gerrychain should calculate and keep track of over each iteration
     # Gerry chain keeps track of several automatically (area, perimeter, cut_edges, etc.)
 
-    updaters = {
+    my_updaters = {
         "population": updaters.Tally("total", alias="population"), # Population updater, for computing how close to equality the district populations are
         "county_info": updaters.county_splits("county_info", "county"),# built in function to generate county info.
         "split_counter": split_counter,# pulls from county_info to get total number of county splits.
@@ -137,7 +137,7 @@ def InitializeGerryChain(graph):
 
     # graph is the object it pulls info from, assignment= is the grouping variable for the starting district plan, and updaters= are your updaters (see above)
 
-    partition = GeographicPartition(graph, assignment="cd_117", updaters=updaters) # GeographicPartitian comes with built-in area and perimeter updaters for compactness.
+    partition = GeographicPartition(graph, assignment="cd_117", updaters=my_updaters) # GeographicPartitian comes with built-in area and perimeter updaters for compactness.
                                                                                             # I'm guessing that cd_117 means the district map from the 117th congress (01/2021-01/2023).
                                                                                                 # So the initial partitian is just the original map according to 117th congress. 
                                                                                                 # al_gdf["cd_117"] assigns nodes to districts as a dictionary. See below.
@@ -182,11 +182,11 @@ def InitializeGerryChain(graph):
         contiguity,
         county_limit]
 
-    return partition, proposal, constraint
+    return graph, partition, proposal, constraint
 
 ######################################################################################################################################################################################################
 
-def RunChain(partition, proposal, constraint, steps, seed, print_iterations = False):
+def RunChain(graph, partition, proposal, constraint, steps, seed, print_iterations = False):
     '''partition, proposal, constraints, steps, seed --> chain_list, metadata_list
        partition = initial state of map
        proposal = chain proposal, 
@@ -211,7 +211,7 @@ def RunChain(partition, proposal, constraint, steps, seed, print_iterations = Fa
     count = 0 # recording iteration count
     chain_list = [] # blank list to vtd assignment for each iteration
     metadata_list = [] # blank list to store metadata
-    tot_num_edges = Graph.number_of_edges() # will be used to calculate proportion of edges not cut
+    tot_num_edges = graph.number_of_edges() # will be used to calculate proportion of edges not cut
     start_time = time.time()
 
     # The Chain itself
