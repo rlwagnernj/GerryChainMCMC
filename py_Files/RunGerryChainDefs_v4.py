@@ -35,7 +35,7 @@ def MakeGraph(shp = None, gdf = None):
         geodataframe for every other
         see MakeGDF()'''
 
-    if shp is not None:
+    if gdf is None:
         gdf = gpd.read_file(shp) # returns a GeoDataFrame from file
         gdf["incumbent"] = gdf["incumbent"].fillna(0) # Clean up data. Make sure that if there are no incumbents, it's 0. 
 
@@ -47,7 +47,7 @@ def MakeGraph(shp = None, gdf = None):
                                                                 # Why are we ignoring errors? What makes an invalid geometry
                                                                     # "Ignore all invalid geometries and attempt to create the graph anyway"
 
-    else:
+    elif shp is None:
         graph = Graph.from_geodataframe(gdf, ignore_errors=True)
 
     return graph 
@@ -249,3 +249,21 @@ def RunChain(graph, partition, proposal, constraint, steps, seed, print_iteratio
 
 ######################################################################################################################################################################################################
 
+def CalculateSegregation(data_file_path='',vtds=[]):
+    """Calculate the S+/- score for a selection of vtds
+    data_file_path must include aggregated local environment data for the vtds
+    vtds is a list of vtd id numbers"""
+
+    import pandas as pd
+
+    vtd_data = pd.read_csv(data_file_path)
+
+    district_data = vtd_data[vtd_data['block_vtda'].isin(vtds)]
+
+    total_population = district_data['total'].sum()
+    total_weighted = district_data['weighted_blk_sl_dist'].sum()
+    pct_black_district = district_data['nh_black'].sum() / total_population * 100 
+
+    seg_score = pct_black_district - (total_weighted/total_population)
+
+    return seg_score
