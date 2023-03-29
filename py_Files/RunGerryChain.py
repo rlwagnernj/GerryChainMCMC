@@ -23,10 +23,10 @@ last_iter = last_iter.rename({"0_y":"cd_117"}, axis=1)
 final = al_gdf.merge(right=last_iter, left_on='vtd_cd_117', right_on='0_x')
 final = final.drop(columns=['cd_117_x','vtd_cd_117']).rename({'0_x':'vtd_cd_117','cd_117_y':'cd_117'}, axis=1) """
 
-shp_file = '/Users/rebeccawagner/Documents/GitHub/GerryGainMCMC/Data/State Shp Files/AL/Alabama_VTD_District_Intersection.shp'
-n = 20
-vtd_data = '/Users/rebeccawagner/Documents/GitHub/GerryGainMCMC/Data/Agregate VTD Demographic Data/AL.csv'
-output_path = '/Users/rebeccawagner/Desktop/'
+shp_file = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/State Shp Files/AL/Alabama_VTD_District_Intersection.shp'
+n = 1000000
+vtd_data = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/Agregate VTD Demographic Data/AL.csv'
+output_path = 'C:/Users/rlwagner01/Desktop/Newest_Output/'
 
 (graph, chain, al_gdf) = GerryChainSetUp(Input_Shp = shp_file, Total_Steps = n)
 
@@ -34,7 +34,7 @@ output_path = '/Users/rebeccawagner/Desktop/'
                                                                     Graph = graph, 
                                                                     Chain = chain,
                                                                     VTD_Data = vtd_data,
-                                                                    Checkpoint = 5,
+                                                                    Checkpoint = 50000,
                                                                     Print_Iterations = True,
                                                                     Output_Csv = output_path + "csv",
                                                                     Output_Metadata = output_path + 'meta',

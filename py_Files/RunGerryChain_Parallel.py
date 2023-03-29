@@ -11,16 +11,19 @@ import csv
 
 ######################################################################################################################################################################################################
 
-FLAG_DATA  = 'MyResults'     # File name header to identify only simulation data files (nothing else should start with this string)
-PATH_OUT   = 'out'           # Directory to save the output
-SHP = '/Users/rebeccawagner/Documents/GitHub/GerryGainMCMC/Data/State Shp Files/AL/Alabama_VTD_District_Intersection.shp' # file path to shp file 
-VTD = '/Users/rebeccawagner/Documents/GitHub/GerryGainMCMC/Data/Agregate VTD Demographic Data/AL.csv'
-STEPS = 10
+FLAG_DATA  = 'RunOne'     # File name header to identify only simulation data files (nothing else should start with this string)
+RUN   = "C:/Users/rlwagner01/Desktop/run"         # Directory to save the output
+NEXT = "C:/Users/rlwagner01/Desktop/next"    
+USED = "C:/Users/rlwagner01/Desktop/used"
+OUTPUT = "C:/Users/rlwagner01/Desktop/output"    
+SHP = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/State Shp Files/AL/Alabama_VTD_District_Intersection.shp' # file path to shp file 
+VTD = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/Agregate VTD Demographic Data/AL.csv'
+STEPS = 2000
 
 ######################################################################################################################################################################################################
 
 def get_files():
-    pattern = os.path.join(PATH_OUT, FLAG_DATA + '_assignments' + '*')
+    pattern = os.path.join(RUN, FLAG_DATA + '_assignments' + '*')
     files = glob(pattern)
     return files
 
@@ -52,14 +55,14 @@ def seed_hist(cur_seed, seed_filename):
 
     return seed_hist
 
-def save_output(chain_list, metadata_list, cur_seed, seed_hist):
+def save_output(chain_list, metadata_list, seed_hist):
     
     # Build the new filename
     chain_file_name = FLAG_DATA + '_assignments_' + seed_hist + '_' + time_stamp()
     meta_file_name = FLAG_DATA + '_metadata_' + seed_hist + '_' + time_stamp()
 
-    chain_file_name = os.path.join(PATH_OUT, chain_file_name)
-    meta_file_name = os.path.join(PATH_OUT, meta_file_name)
+    chain_file_name = os.path.join(NEXT, chain_file_name)
+    meta_file_name = os.path.join(OUTPUT, meta_file_name)
 
     chain_df = pd.DataFrame(chain_list)
     with open(chain_file_name, 'x', encoding='utf8', newline='') as output_file:
@@ -80,15 +83,15 @@ def run_branch(graph, partition, proposal, constraint, steps, seed_hist, seed = 
     # run a chain
     chain_list, metadata_list = RunChain(graph = graph, partition = partition, proposal = proposal, constraint = constraint, steps = steps, seed = seed, print_iterations = print_iterations)
     # save the output
-    chain_file_name = save_output(chain_list = chain_list, metadata_list = metadata_list, cur_seed=seed, seed_hist=seed_hist)
+    chain_file_name = save_output(chain_list = chain_list, metadata_list = metadata_list, seed_hist=seed_hist)
     return chain_file_name
 
 def get_next_partition(shp, i = int):
 
-    gdf = gpd.read_file(SHP)
+    gdf = gpd.read_file(shp)
     gdf["incumbent"] = gdf["incumbent"].fillna(0)
 
-    files = get_recent_files()
+    files = get_files()
 
     if files is None:
         return 
@@ -106,7 +109,7 @@ def get_next_partition(shp, i = int):
         last_iter = pd.DataFrame(vtds).merge(right=pd.DataFrame(last_assignment), right_index=True, left_index=True).drop(labels=0, axis=0).rename({"0_y":"cd_117"}, axis=1)
         return gdf.merge(right=last_iter, left_on='vtd_cd_117', right_on='0_x').drop(columns=['cd_117_x','vtd_cd_117']).rename({'0_x':'vtd_cd_117','cd_117_y':'cd_117'}, axis=1)
 
-def segregation_output(file, seed, vtd_data, seed_hist):
+def segregation_output(file, vtd_data, seed_hist):
 
     #pattern = os.path.join(PATH_OUT, FLAG_DATA + '_assignments_' + str(seed) + '*')
     #file = glob(pattern)
@@ -127,7 +130,7 @@ def segregation_output(file, seed, vtd_data, seed_hist):
             segregation_frame[int(i)] = score_list
 
     seg_file_name = FLAG_DATA + '_segregation_' + seed_hist + '_' + time_stamp()
-    seg_file_name = os.path.join(PATH_OUT, seg_file_name)
+    seg_file_name = os.path.join(OUTPUT, seg_file_name)
 
     with open(seg_file_name, 'x', encoding='utf8', newline='') as output_file:
         transposed_seg = segregation_frame.T
@@ -139,11 +142,12 @@ if __name__ == "__main__":
 
     SEED, FILE_NUM = int(sys.argv[1]), int(sys.argv[2]) 
 
-    # Make sure the output directory exists, create it if not 
-    if not os.path.exists(PATH_OUT):
-        os.mkdir(PATH_OUT)
+    # Make sure the output directories exists, create if not 
+    for directory in [USED, RUN, NEXT, OUTPUT]:
+        if not os.path.exists(directory):
+            os.mkdir(directory)
 
-    f = get_recent_files()
+    f = get_files()
 
     if f is None:
         GDF = None
@@ -159,7 +163,7 @@ if __name__ == "__main__":
         
     chain_file_name = run_branch(graph = graph, partition=partition, proposal=proposal, constraint=constraint, steps=STEPS, seed=SEED, seed_hist = seed_hist_str, print_iterations=True)
 
-    segregation_output(file=chain_file_name, seed = SEED, vtd_data = VTD, seed_hist=seed_hist_str)
+    segregation_output(file=chain_file_name, vtd_data = VTD, seed_hist=seed_hist_str)
         
     print(0)
-    print("Next Seed: " + str(SEED + 1))
+    #print("Next Seed: " + str(SEED + 1)) 
