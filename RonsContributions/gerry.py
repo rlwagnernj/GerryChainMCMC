@@ -109,10 +109,8 @@ class GerryDB():
         Before calling this function, self.vtds must be initialized by calling GetVTDs() and passing in one of the files.
         We assume that the VTD names are consistent throughout all the RW files.
 
-        Each table will contain the plan_id in the first column (which is currently just a sequentially assigned inter)
-        with the rest of columns containing the inital district_id assigned by RW.
-
         The table will contain N+1 columns, where N is the number of VTDs in the state
+        The table will contain a number of rows equal to the number of simulations that were run
 
         Other inputs:
             stop_at_column: For testing purposes.  Will only create this many VTD columns.
