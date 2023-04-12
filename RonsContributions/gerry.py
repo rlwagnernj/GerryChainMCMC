@@ -141,11 +141,6 @@ if we do have a primary key it should be more meaningful than an autoincrement
             column_name = self.VTD + self.SanitizeVTD(vtd)
             self.vtd_columns.append(column_name)
 
-            if '-' in column_name:
-                print(vtd)
-                print(column_name)
-                break
-
             sql += column_name + ' INTEGER NOT NULL,\n'
 
             if stop_at_column is not None:
