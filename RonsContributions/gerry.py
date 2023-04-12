@@ -109,7 +109,9 @@ class GerryDB():
         Before calling this function, self.vtds must be initialized by calling GetVTDs() and passing in one of the files.
         We assume that the VTD names are consistent throughout all the RW files.
 
-        The table will contain N+1 columns, where N is the number of VTDs in the state
+        The table will contain N (not N+1, since the idea to have a primary key column was nullified) columns, 
+        where N is the number of VTDs in the state
+        
         The table will contain a number of rows equal to the number of simulations that were run
 
         Other inputs:
