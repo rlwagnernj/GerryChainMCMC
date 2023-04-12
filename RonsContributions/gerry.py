@@ -132,8 +132,6 @@ CREATE TABLE tPlan (
 commented out the primary key for now, 
 if we do have a primary key it should be more meaningful than an autoincrement 
 */
-
-
 """
         self.vtd_columns = []
 
@@ -166,9 +164,7 @@ if we do have a primary key it should be more meaningful than an autoincrement
         '''
         Load the contents of file_name into tPlan
         '''
-
         self.Connect()
-
 
         try:
             # The INSERT statement.  Using named parameters to ensure that we are not assuming rows line up betwen files.
@@ -242,7 +238,6 @@ if we do have a primary key it should be more meaningful than an autoincrement
             if i==stop_after: return exit_code
         return exit_code
     
-
     def RelabelDistricts(self):
         '''
         Logic to relabel districts should go here
@@ -276,8 +271,6 @@ if we do have a primary key it should be more meaningful than an autoincrement
 
         self.conn.close()
         return
-
-
 
     def RunQuery(self, sql, params=None):
         '''
