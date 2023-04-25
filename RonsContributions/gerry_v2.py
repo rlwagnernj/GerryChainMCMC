@@ -20,21 +20,11 @@ class GerryDB():
     '''
 
     # Path to the data, relative to where this module is located
-    PATH = '../Output/Chain_02.23/next/'
-    
-    # Dictionary used to convert characters in VTD names that are invalid/undesirable in SQL database column names
-    # Keys/values can be reversed to recover the original VTD name 
-    CHARS = {'-' : '_hyphen_',
-             '.' : '_dot_'}
-    
-    # Since vtds usually start with numbers, and SQL columns cannot, we insert this string at the beginning of the VTD name
-    VTD = 'vtd_'
+    NEXT_PATH = '../Output/Chain_02.23/next/'
+    USED_PATH = '../Output/Chain_02.23/used/'
+    SCORES_PATH = '../Output/Chain_02.23/scores/'
 
     def __init__(self):
-        # Initialize the list of VTDs. It is assumed they are the same across all files, 
-        # so we just grab them from one
-        any_file_from_RW = __class__.GetFiles()[0]
-        self.GetVTDs(any_file_from_RW, set_as_main_names=True)
         return
     
     def Connect(self):
@@ -49,8 +39,8 @@ class GerryDB():
         Made this one static so we can quickly check if we're looking in the right directory
         without having to instantiate the class.
         '''
-        return glob(__class__.PATH + '*')
-    
+        return glob(__class__.NEXT_PATH + '*') + glob(__class__.USED_PATH + '*')
+         
     
     def GetLine(self, file, verbose=False):
         '''
@@ -64,44 +54,6 @@ class GerryDB():
                     return line
         return
     
-    def GetVTDs(self, file, set_as_main_names = False):
-        '''
-        Extract the VTD names as is from a RW file.
-
-        Use the SanitizeVTD function to convert them into valid names for the SQL database.
-
-        The expectation is that the names are the same across all files,
-        and that we will use the names in the first file we read as the
-        column names in the database.
-
-        By default, it just extracts and returns the names. To save them as as the 'master' list
-        of names, call with set_as_main_names = True
-        '''
-
-        vtds = []
-        with open(file, 'r') as f:
-            for i, line in enumerate(f):
-                if i > 0:
-                    vtds.append(line.split(',')[0])
-        if set_as_main_names:
-            self.vtds = vtds
-        return
-
-    def SanitizeVTD(self, vtd):
-        '''
-        Replace invalid/undesirable characters in VTD name with those defined in CHARS
-        '''
-        for key, value in self.CHARS.items():
-            vtd = vtd.replace(key, value)
-        return vtd
-    
-    def UnsanitizeVTD(self, vtd):
-        '''
-        Undo the logic in SanitizeVTD and return the original VTD name
-        '''
-        for key, value in self.CHARS.items():
-            vtd = vtd.replace(value, key)
-        return vtd
     
     def CreatePlanTable(self, stop_at_column=None, verbose=False):
         '''
@@ -109,11 +61,6 @@ class GerryDB():
 
         Before calling this function, self.vtds must be initialized by calling GetVTDs() and passing in one of the files.
         We assume that the VTD names are consistent throughout all the RW files.
-
-        The table will contain N (not N+1, since the idea to have a primary key column was nullified) columns, 
-        where N is the number of VTDs in the state
-        
-        The table will contain a number of rows equal to the number of simulations that were run
 
         Other inputs:
             stop_at_column: For testing purposes.  Will only create this many VTD columns.
@@ -127,27 +74,13 @@ class GerryDB():
         # Initial part of the sql statement. Pardon the ugly unindent.
         sql = """
 CREATE TABLE tPlan (
---plan_id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-/* 
-commented out the primary key for now, 
-if we do have a primary key it should be more meaningful than an autoincrement 
-*/
-"""
-        self.vtd_columns = []
-
-        for i, vtd in enumerate(self.vtds):
-            column_name = self.VTD + self.SanitizeVTD(vtd)
-            self.vtd_columns.append(column_name)
-
-            sql += column_name + ' INTEGER NOT NULL,\n'
-
-            if stop_at_column is not None:
-                if i > stop_at_column:
-                    break
-
-        # Strip off the last comma and close the create table statement
-        sql = sql[:-2] + ');'
+plan_id TEXT,
+vtd TEXT NOT NULL,
+iter INTEGER NOT NULL,
+dist INTEGER NOT NULL,
+PRIMARY KEY(vtd, iter)
+);
+""" 
 
         if verbose: print(sql)
         
@@ -161,56 +94,104 @@ if we do have a primary key it should be more meaningful than an autoincrement
         self.conn.close()
         return
     
+    def CreateScoresTable(self, verbose=False):
+
+        self.Connect()
+        self.curs.execute("DROP TABLE IF EXISTS tScores;")
+
+        # Initial part of the sql statement. Pardon the ugly unindent.
+        sql = """
+CREATE TABLE tScores (
+plan_id TEXT REFERENCES tPlan(plan_id),
+dist INTEGER NOT NULL,
+seg_score FLOAT NOT NULL,
+bvap FLOAT);
+""" 
+
+        if verbose: print(sql)
+        
+        try:
+            self.curs.execute(sql)
+        except:
+            pe()
+            print('\nFailed to create tScores. See the details:')
+            if verbose: print(sql)
+        
+        self.conn.close()
+        return
+    
+    def CreateVTDTable(self, verbose=False):
+
+        self.Connect()
+        self.curs.execute("DROP TABLE IF EXISTS tVtd;")
+
+        # Initial part of the sql statement. Pardon the ugly unindent.
+        sql = """
+CREATE TABLE tVtd (
+vtd TEXT NOT NULL REFERENCES tPlan(vtd),
+incumbent TEXT NOT NULL,
+geography BLOB);
+""" 
+
+        if verbose: print(sql)
+        
+        try:
+            self.curs.execute(sql)
+        except:
+            pe()
+            print('\nFailed to create tVtd. See the details:')
+            if verbose: print(sql)
+        
+        self.conn.close()
+        return
+    
+    def prep(file):
+
+        seed = file.split('_')[3]
+
+        data = pd.read_csv(file)
+        data['Iteration'] = [x[:-6] for x in data['Iteration']]
+        data.rename(columns={'Iteration':'vtd'}, inplace=True)
+
+        data_m = data.melt(id_vars='vtd',var_name='iter',value_name='dist')
+        data_m["plan_id"] = seed + '_' + data_m["iter"]
+
+        return(data_m)
+    
     def LoadFile(self, file_name, verbose=False):
         '''
         Load the contents of file_name into tPlan
         '''
         self.Connect()
 
-        try:
-            # The INSERT statement.  Using named parameters to ensure that we are not assuming rows line up betwen files.
-            sql = 'INSERT INTO tPlan (' + ','.join(self.vtd_columns) + ') VALUES (:' + ',:'.join(self.vtd_columns) + ');'
-            if verbose: print(sql)
+        for file in self.GetFiles():
 
-            # Load the file into a dataframe. Using a pandas dataframe incurs additional overhead (vs an array),
-            # but we need to loop over columns rather than rows.
+            data = self.prep_assignments(file)
 
-            # Set the index of the dataframe as the column named Iteration to separate it from the rest of the plan
-            df = pd.read_csv(file_name, index_col='Iteration')
-            
-            # Extract the VTD names from the dataframe and append the VTD prefix
-            # since SQL columns can't start with digits
-            vtd_list = [self.VTD + self.SanitizeVTD(v) for v in list(df.index)]
+            try:
+                # The INSERT statement.  Using named parameters to ensure that we are not assuming rows line up betwen files.
+                sql = 'INSERT INTO tPlan (' + ','.join(data.columns) + ') VALUES (:' + ',:'.join(self.vtd_columns) + ');'
+                if verbose: print(sql)
 
-            # Iterate over each column (plan) in the dataframe
-            for column, district_id in df.items():
-
-                # Extract the values from this column
-                district_id = district_id.values
-
-                # Keep the last digit only (valid for AL, since there are only 7 districts. Need to adjust if a state has more than 10 districts)
-                district_id = [int(str(d)[-1]) for d in district_id]
-
-                # Make a dictionary with the VTDs as keys, and their district_id as values
                 params = dict(zip(vtd_list, district_id))
 
                 # Insert this row into the database
                 self.curs.execute(sql, params)
-        except:
-            # If anything goes wrong here, print detailed information,
-            # rollback all changes in the database since the last commit,
-            # close the connection, and return False
-            pe()
-            print('\n\nProblem loading:', file_name)
-            print('\n\nProblem occured at column:', column)
-            self.conn.rollback()
-            self.conn.close()
-            return False
+            except:
+                # If anything goes wrong here, print detailed information,
+                # rollback all changes in the database since the last commit,
+                # close the connection, and return False
+                pe()
+                print('\n\nProblem loading:', file)
+                print('\n\nProblem occured at column:', column)
+                self.conn.rollback()
+                self.conn.close()
+                return False
 
-        # If everything went OK, commit the changes and return True
-        self.conn.commit()
-        self.conn.close()
-        return True
+            # If everything went OK, commit the changes and return True
+            self.conn.commit()
+            self.conn.close()
+            return True
     
     def LoadFiles(self, stop_after=0, verbose=True):
         ''''
