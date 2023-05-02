@@ -39,8 +39,7 @@ class GerryDB():
         Made this one static so we can quickly check if we're looking in the right directory
         without having to instantiate the class.
         '''
-        return glob(__class__.NEXT_PATH + '*') + glob(__class__.USED_PATH + '*')
-         
+        return glob(__class__.NEXT_PATH + '*') + glob(__class__.USED_PATH + '*')   
     
     def GetLine(self, file, verbose=False):
         '''
@@ -53,19 +52,35 @@ class GerryDB():
                     if verbose: print(line)
                     return line
         return
+
+    def RunQuery(self, sql, params=None):
+
+        '''
+        Convenience method for running queries on the database.
+
+        Also ensures that we don't leave a stray connection open when running queries.
+        '''
+        self.Connect()
+        try:
+            if params is not None:
+                results = pd.read_sql(sql, self.conn, params=params)
+            else:
+                results = pd.read_sql(sql, self.conn)
+        except:
+            pe()
+            print('\n\nThere was a problem running the query...')
+            print('\nThe query was:\n', sql)
+            print('\nThe parameters passed were:\n', params)
+            results = None
+        self.conn.close()
+        return results  
     
-    
-    def CreatePlanTable(self, stop_at_column=None, verbose=False):
+    def CreatePlanTable(self, verbose=False):
         '''
         Create tPlan, the table that will store each of the simulated districting plans.
 
-        Before calling this function, self.vtds must be initialized by calling GetVTDs() and passing in one of the files.
-        We assume that the VTD names are consistent throughout all the RW files.
 
-        Other inputs:
-            stop_at_column: For testing purposes.  Will only create this many VTD columns.
-
-            verbose: Mainly for testing, so we can see what's going on when the code is running. Adjust or add more options as needed.
+        verbose: Mainly for testing, so we can see what's going on when the code is running. Adjust or add more options as needed.
         '''
 
         self.Connect()
@@ -76,9 +91,8 @@ class GerryDB():
 CREATE TABLE tPlan (
 plan_id TEXT,
 vtd TEXT NOT NULL,
-iter INTEGER NOT NULL,
 dist INTEGER NOT NULL,
-PRIMARY KEY(vtd, iter)
+PRIMARY KEY(plan_id, vtd)
 );
 """ 
 
@@ -102,10 +116,10 @@ PRIMARY KEY(vtd, iter)
         # Initial part of the sql statement. Pardon the ugly unindent.
         sql = """
 CREATE TABLE tScores (
-plan_id TEXT REFERENCES tPlan(plan_id),
-dist INTEGER NOT NULL,
-seg_score FLOAT NOT NULL,
-bvap FLOAT);
+plan_id TEXT,
+dist TEXT,
+dist_index INTEGER NOT NULL,
+seg_score FLOAT NOT NULL);
 """ 
 
         if verbose: print(sql)
@@ -145,45 +159,121 @@ geography BLOB);
         self.conn.close()
         return
     
-    def prep(file):
+    def FillTable(self, table_name, data):
+        """Load data from a dataframe to a table, 
+        assumes that the columns in the dataframe and the table have the same name"""
+        
+        print("fill function")
+        sql = "INSERT INTO " + table_name + " (" + \
+            ",".join([c for c in data.columns]) + \
+            ") VALUES (" + ",".join([':' + c for c in data.columns]) + ");"
+        
+        for row in data.to_dict(orient='records'):
+            try:
+                self.curs.execute(sql,row)
+            except Exception as e:
+                print(e)
+                print(row)
+                return 0
+        print("returning fill function")
+        return 1
+    
+    def PrepAssignments(self, file):
 
-        seed = file.split('_')[3]
+        seed  = file.split('_')[3]
 
         data = pd.read_csv(file)
-        data['Iteration'] = [x[:-6] for x in data['Iteration']]
         data.rename(columns={'Iteration':'vtd'}, inplace=True)
 
         data_m = data.melt(id_vars='vtd',var_name='iter',value_name='dist')
         data_m["plan_id"] = seed + '_' + data_m["iter"]
+        data_m = data_m.drop('iter',axis=1)
 
         return(data_m)
     
-    def LoadFile(self, file_name, verbose=False):
+    def MeltScores(self, file, sorted=False):
+
+        seed = file.split('_')[4]
+
+        scores = pd.read_csv(file,names=[1001,1002,1003,1004,1005,1006,1007])
+
+        var_name = 'dist'
+
+        if sorted:
+            scores = pd.DataFrame(np.sort(scores.values, axis=1), index=scores.index, columns=scores.columns)
+
+            var_name = 'dist_index'
+
+        scores['plan_id'] = seed
+        scores = scores.reset_index().rename(columns = {'index':'iteration'})
+        scores = scores.astype({'iteration':str})
+        scores['plan_id'] = scores['plan_id'] + '_' + scores['iteration']
+        scores = scores.drop('iteration',axis=1)
+
+        scores_m = pd.melt(scores,id_vars=['plan_id'],var_name=var_name,value_name='seg_score')    
+
+        return scores_m
+    
+    def PrepScores(self, file):
+
+        sorted = self.MeltScores(file, sorted=False)
+        unsorted = self.MeltScores(file, sorted=True)
+
+        return sorted.merge(right=unsorted, left_on=['plan_id','seg_score'], right_on=['plan_id','seg_score'])
+    
+    def LoadPlanFiles(self, directory, verbose=False):
         '''
         Load the contents of file_name into tPlan
         '''
+
+        files = glob(directory + '/' + '*')
+
         self.Connect()
 
-        for file in self.GetFiles():
+        for file in files:
 
-            data = self.prep_assignments(file)
+            print(file)
+
+            data = self.PrepAssignments(file)
 
             try:
-                # The INSERT statement.  Using named parameters to ensure that we are not assuming rows line up betwen files.
-                sql = 'INSERT INTO tPlan (' + ','.join(data.columns) + ') VALUES (:' + ',:'.join(self.vtd_columns) + ');'
-                if verbose: print(sql)
-
-                params = dict(zip(vtd_list, district_id))
-
-                # Insert this row into the database
-                self.curs.execute(sql, params)
+                print("filling table")
+                self.FillTable("tPlan",data)
             except:
                 # If anything goes wrong here, print detailed information,
                 # rollback all changes in the database since the last commit,
                 # close the connection, and return False
-                pe()
                 print('\n\nProblem loading:', file)
-                print('\n\nProblem occured at column:', column)
+                self.conn.rollback()
+                self.conn.close()
+                return False
+
+        # If everything went OK, commit the changes and return True
+        print("committing")
+        self.conn.commit()
+        self.conn.close()
+        return True
+    
+    def LoadScoreFiles(self, directory, verbose=False):
+        '''
+        Load the contents of file_name into tPlan
+        '''
+
+        files = glob(directory + '/' + '*')
+
+        self.Connect()
+
+        for file in files:
+
+            data = self.PrepScores(file)
+
+            try:
+                self.FillTable("tScores",data)
+            except:
+                # If anything goes wrong here, print detailed information,
+                # rollback all changes in the database since the last commit,
+                # close the connection, and return False
+                print('\n\nProblem loading:', file)
                 self.conn.rollback()
                 self.conn.close()
                 return False
@@ -192,33 +282,6 @@ geography BLOB);
             self.conn.commit()
             self.conn.close()
             return True
-    
-    def LoadFiles(self, stop_after=0, verbose=True):
-        ''''
-        Load the simulation results into the database.
-
-        For testing purposes, this currently only loads one file,
-        and then raises a warning to alert RW that the code isn't complete
-        '''
-
-        file_names = __class__.GetFiles()
-
-        for i, file in enumerate(file_names):
-            print('Loading file:', file)
-            exit_code = self.LoadFile(file)
-            print("""
-            Hi Rebecca,
-
-            Currently only loading 1 file, for testing purposes! 
-
-            Modify gerry.GerryDB.LoadFiles() when you're ready to run it for real.
-            
-            Best,
-            -Ron
-            """)
-
-            if i==stop_after: return exit_code
-        return exit_code
     
     def RelabelDistricts(self):
         '''
@@ -253,24 +316,3 @@ geography BLOB);
 
         self.conn.close()
         return
-
-    def RunQuery(self, sql, params=None):
-        '''
-        Convenience method for running queries on the database.
-
-        Also ensures that we don't leave a stray connection open when running queries.
-        '''
-        self.Connect()
-        try:
-            if params is not None:
-                results = pd.read_sql(sql, self.conn, params=params)
-            else:
-                results = pd.read_sql(sql, self.conn)
-        except:
-            pe()
-            print('\n\nThere was a problem running the query...')
-            print('\nThe query was:\n', sql)
-            print('\nThe parameters passed were:\n', params)
-            results = None
-        self.conn.close()
-        return results
