@@ -9,8 +9,8 @@ USED = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/u
 
 FLAG_DATA = 'RunTwo'
 
-branch = 298
-seed = 4000
+branch = 398
+seed = 6050
 parallel_path = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/RunGerryChainParallelDefs.py'
 
 while branch < 500:
@@ -29,12 +29,12 @@ while branch < 500:
 
         for i in range(n):
 
-            cmd = 'start cmd /c python '  + parallel_path + ' ' + str(seed) + ' ' + str(i)
+            cmd = 'start cmd /k python '  + parallel_path + ' ' + str(seed) + ' ' + str(i)
             os.system(cmd)
 
             seed+=1
             
-            cmd = 'start cmd /c python ' + parallel_path + ' ' + str(seed) + ' ' + str(i)
+            cmd = 'start cmd /k python ' + parallel_path + ' ' + str(seed) + ' ' + str(i)
             os.system(cmd)
 
             seed+=1
@@ -43,6 +43,7 @@ while branch < 500:
 
         print("waiting...")
         time.sleep(3000)
+        os.system('start cmd /c taskkill /IM WindowsTerminal.exe')
 
         # move the used files to USED
         pattern = os.path.join(RUN, FLAG_DATA + '_assignments' + '*')
