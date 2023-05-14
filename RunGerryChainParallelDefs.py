@@ -11,13 +11,13 @@ import csv
 
 ######################################################################################################################################################################################################
 
-FLAG_DATA  = 'RunTwo'     # File name header to identify only simulation data files (nothing else should start with this string)
-RUN   = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/run"   
-NEXT = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/next"    
-USED = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/used" 
-META =  "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/meta" 
-SEG = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/seg" 
-BVAP =  "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.02/bvap" 
+FLAG_DATA  = 'RunThree'     # File name header to identify only simulation data files (nothing else should start with this string)
+RUN   = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/run"   
+NEXT = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/next"    
+USED = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/used" 
+META =  "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/meta" 
+SEG = "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/seg" 
+BVAP =  "C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Output/Chain_05.10/bvap" 
 SHP = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/State Shp Files/AL/Alabama_VTD_District_Intersection.shp' # file path to shp file 
 VTD = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/Agregate VTD Demographic Data/AL.csv'
 BVAP_VTD = 'C:/Users/rlwagner01/Documents/GitHub/GerryChainMCMC/Data/bvap_vtds.csv'
