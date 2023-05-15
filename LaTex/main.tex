@@ -71,9 +71,9 @@ A ($S^{+/-}$) score contextualizes a minority population in its local geogrpahic
 We make use of Saporito and Maliniak's ($S^{+/-}$) measure in our analysis, and compare these scores bvap. It may not be clear whether one score is inherently better than another, but each provides a different persepctive on the issue of racial gerrymandering.
 
 \section{Methods}\label{methods}
-This paper utilizes both MGGG's GerryChain algorithm and the $S^{+/-}$ measure to evaluate segregation within Alabama's 2020 congressional districting map. We generate ensembles of districting plans according to Alabama's state criteria, and calculate segregation scores for each of these maps. ALARM similarly generated districting maps utilizing their SMC algorithm, which we also apply the $S^{+/-}$ measure to for comparison. In section 2.1, we discuss the legal constraints on congresssional districts. In the following sections 2.2 and 2.3, we discuss our specific methos and confirm convergence of our MCMC generated ensemble of maps. In section 3, we apply $S^{+/-}$ and BVAP measures to both our ensemble and an enseble generated with ALARM's SMC algorithm. We conclude in section 4, considering the implications of our data in section well as potential pitfalls to the methodology and areas for future research.
+This paper utilizes both MGGG's GerryChain algorithm and the $S^{+/-}$ measure to evaluate segregation within Alabama's 2020 congressional districting map. We generate ensembles of districting plans according to Alabama's state criteria, and calculate segregation scores for each of these maps. In section 2.1, we discuss the legal constraints on congresssional districts and our specific methods of generation. In the following section 2.2, we discuss and confirm convergence of our MCMC generated ensemble of maps. In section 3, we apply $S^{+/-}$ and BVAP measures to our ensembles as well as Alabama's enacted 2020 plan. In section 4 we consider the implications of our data in section well as potential pitfalls to the methodology and areas for future research.
 
-\subsection{Constraits on Map Generation}\label{constraints}
+\subsection{Map Generation}\label{generation}
 
 Alabama provides several criteria for congressional districts. These criteria state that districts must:
 
@@ -87,19 +87,96 @@ Alabama provides several criteria for congressional districts. These criteria st
 \end{enumerate}
 
 Clearly, several of these criteria are open to interpretation, an issue that is relevant in legeslation but beyond the scope of this paper. Our algorithm is able to enforce every constraint except incumbent competition. All generated districts are continuious, and compactness is accounted for by the number of county splits; they are limited to 3 times the original number of splits. This also helps us to preserve county boundaries. As for population, districts are kept within a .5\% population deviance from the ideal, equal populations. Seeing as our plans are generated for the purpose of evaluating segregation, we do not consider opportunity districts, BVAP scores, or communities of interest. In this way, our generated maps may be considered "race-blind".
-
-\subsection{Map Generation}\label{generation}
-Using MGGG’s GerryChain library and ReCom proposal, we generated 1,000,000 districting maps of Alabama’s 7 congressional districts. We began with Alabama’s 2020 congressional district plan as a seed. We continued from the original map for 2000 iterations, and subsequently used the 2000th map as a seed for 2 more, different iterative runs. We continued in this fashion, each 2000th map being the seed for two more terative runs. It was our hope that this method, aside from inceasing the speed of computation, would create maps suitably different from eachother so that we can appropriately approximate a distribution of segregation measures.
 \par
-For each of the 7 districts in each of these plans, we calculated an $S^{+/-}$ score according to Saporito and Maleniak’s quantification, resulting in \hl{X} individual segregation scores. Data for these calculations comes from the 2020 US census, and includes geographies for voting tabulation districts as well as population statistics in these localities. \st{We additionally generated 35,000 segregation scores based on ALARM's 5,000 districting plans for the state for comparison.}
+Using MGGG’s GerryChain library and ReCom proposal, we generated 1,000,000 districting maps of Alabama’s 7 congressional districts. We began with Alabama’s 2020 congressional district plan as a seed. We continued from the original map for 2000 iterations, and subsequently used the 2000th map as a seed for 2 more, different iterative runs. We continued in this fashion, each 2000th map being the seed for two more iterative runs. See \hyperref[iterative map]{Figure 2} for an example or consecutively generated maps. These maps each have small boundary changes from the last due to MGGG's Recom proposal. To view the to view this diverging map process, see \hyperref[diverge 1]{Figure 3}, \hyperref[diverge 10]{Figure 4}, and \hyperref[diverge 100]{Figure 5} It was our hope that this method aside from inceasing the speed of computation, would create maps suitably different from eachother so that we can appropriately approximate a distribution of segregation measures.
+\par
+A total of just over 1M distinct maps were generated. For each of the 7 districts in each of these plans, we calculated an $S^{+/-}$ score according to Saporito and Maleniak’s quantification, resulting in over 7M individual segregation scores. Data for these calculations comes from the 2020 US census, and includes geographies for voting tabulation districts as well as population statistics in these localities. 
+
+\begin{figure}[t]\label{iterative maps}
+    \centering
+    \includegraphics[scale=.7]{images/changing_maps.png}
+    \caption{\textbf{Iterative Maps} 5 iterations of generated maps, left to right. Note the subtle boundary changes}
+\end{figure}
+
+\begin{figure}[h]\label{diverge 1}
+    \centering
+    \includegraphics[scale=.8]{images/maps_1.png}
+    \caption{\textbf{Diverging Maps 1} 
+    Left: seed map. Right: 1 iteration past the seed map on two diverging paths.}
+\end{figure}
+
+\begin{figure}[h]\label{diverge 10}
+    \centering
+    \includegraphics[scale=.8]{images/maps_10.png}
+    \caption{\textbf{Diverging Maps 2} Left: seed map. Right: 100 iteration past the seed map on two diverging paths.}
+\end{figure}
+
+\begin{figure}[h]\label{diverge 100}
+    \centering
+    \includegraphics[scale=.8]{images/maps_100.png}
+    \caption{\textbf{Diverging Maps 3} Left: seed map. Right: 100 iteration past the seed map on two diverging paths.}
+\end{figure}
+
+\clearpage
+
 \subsection{Convergence Analysis}\label{convergence}
+
+For the generated ensemble of plans to be appropriate for analysis, the distribution of $S^{+/-}$ scores must demonstrate convergence. We confirm this convergence by observing the distributions at increasing percentages of the complete number of iterations. As the distribution stabilizes, we should observe minimal change with increasing iterations. To compare segregation scores across districts, we have indexed (sorted) the 7 districts from the one with lowest $S^{+/-}$ score to the highest $S^{+/-}$ (from left to right in our figures).
+\par
+In \hyperref[fig 2]{Figure 2}, we display box plots of each indexed district at logarithmic intervals. We can see that the plots display less change as iterations increase, indicating that the distribution is stabilizing. We show similar results in \hyperref[fig 3]{Figure 3}, instead utilizing BVAP scores as our measure of segregation. See \hyperref[convergence appendix]{Appendix A} for more figures regarding distribution convergence.
+\
+\begin{figure}[h]\label{fig 2}
+    \centering
+    \includegraphics[scale=.5]{images/asu_bxp_convergence.png}
+    \caption{caption}
+\end{figure}
+
+\begin{figure}[h]\label{fig 3}
+    \centering
+    \includegraphics[scale=.5]{images/bvap_bxo_convergence.png}
+    \caption{caption}
+\end{figure}
 
 \section{Results}\label{results}
 
-\subsection{Areal Unit Segregation Analysis}
+\subsection{Contextualizing Alabama's 2020 Enacted Legeslative Districts}
 
-\subsection{BVAP Comparison}
+
+\hyperref[fig 8]{Figure 8} and \hyperref[fig 9]{Figure 9} compares the $S^{+/-}$ and BVAP scores of Alabama's 7 legeslative districs enacted in 2020 with our generated ensembles. The original scores were indexed in the same mannor as the generated districts, from lowest to highest. We can see clearly that when we quantify segregation with either metric, the original score indexted 7 is an extreme outlier to our distributions.      
+
+
+
+\begin{figure}[h]\label{fig 8}
+    \centering
+    \includegraphics[scale=.5]{images/asu_compare.png}
+    \caption{caption}
+\end{figure}
+
+\begin{figure}[h]\label{fig 9}
+    \centering
+    \includegraphics[scale=.5]{images/bvap_compare.png}
+    \caption{caption}
+\end{figure}
 
 \section{Conclusion}
+
+\appendix
+\section{}\label{convergence appendix}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=.6]{images/asu_kde_convergence.png}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=.6]{images/bvap_kde_convergence.png}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=.6]{images/asu_hist_convergence.png}
+\end{figure}
+
 
 \end{document}
