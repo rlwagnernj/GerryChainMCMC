@@ -1,0 +1,58 @@
+\begin{thebibliography}{10}
+
+\bibitem{Bartlett}
+{\em \textup{Bartlett v. Strickland, 556 U.S. 1 (2009)}}.
+
+\bibitem{Bethune}
+{\em \textup{Bethune-Hill v. Virginia State Board of Elections, 580 U.S.
+  (2017)}}.
+
+\bibitem{BushVera}
+{\em \textup{Bush v. Vera, 517 U.S. 952 (1996)}}.
+
+\bibitem{Lewis}
+{\em \textup{Common Cause v. Lewis, 373 N.C. 258 (2019)}}.
+
+\bibitem{GillWhitford}
+{\em \textup{Gill v. Whitford, 585 U.S. (2018)}}.
+
+\bibitem{Harper}
+{\em \textup{Harper v. Lewis, 186 F.Supp. 285 (2019)}}.
+
+\bibitem{LeaguePA}
+{\em \textup{League of Women Voters of Pennsylvania v. Commonwealth of
+  Pennsylvania, J-1 (2018)}}.
+
+\bibitem{Merill}
+{\em \textup{Merrill v. Milligan, 142 S. Ct. 879 (2022)}}.
+
+\bibitem{RuchoCommom}
+{\em \textup{Rucho v. Common Cause, 588 U.S. (2019)}}.
+
+\bibitem{ShawReno}
+{\em \textup{Shaw v. Reno, 590 U.S. 630 (1993)}}.
+
+\bibitem{ThorburgvGingles}
+{\em \textup{Thornburg v. Gingles, 478 U.S. 30 (1986)}}.
+
+\bibitem{VAREPORT}
+Comparison of districting plans for the virginia house of delegates.
+\newblock Technical report, Metric Geometry and Gerrymandering Group, 2018.
+
+\bibitem{DBLP:journals/corr/abs-1911-05725}
+Daryl~R. DeFord, Moon Duchin, and Justin Solomon.
+\newblock Recombination: {A} family of markov chains for redistricting.
+\newblock {\em CoRR}, abs/1911.05725, 2019.
+
+\bibitem{mccartan2023sequential}
+Cory McCartan and Kosuke Imai.
+\newblock Sequential monte carlo for sampling balanced and compact
+  redistricting plans, 2023.
+
+\bibitem{SAPORITO2022}
+Salvatore Saporito and Daniel Maliniak.
+\newblock Using the areal unit segregation measure to identify racially
+  “packed” and “cracked” legislative districts.
+\newblock {\em Electoral Studies}, 80:102526, 2022.
+
+\end{thebibliography}

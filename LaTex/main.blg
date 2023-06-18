@@ -1,0 +1,94 @@
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: plain.bst
+Database file #1: GerryChain.bib
+Warning--I didn't find a database entry for "VAREPORT."
+Warning--to sort, need author, editor, or key in ThorburgvGingles
+Warning--to sort, need author, editor, or key in ShawReno
+Warning--to sort, need author, editor, or key in BushVera
+Warning--to sort, need author, editor, or key in Bethune
+Warning--to sort, need author, editor, or key in Bartlett
+Warning--to sort, need author, editor, or key in RuchoCommom
+Warning--to sort, need author, editor, or key in Harper
+Warning--to sort, need author, editor, or key in Lewis
+Warning--to sort, need author, editor, or key in GillWhitford
+Warning--to sort, need author, editor, or key in LeaguePA
+Warning--to sort, need author or key in VAREPORT
+Warning--to sort, need author, editor, or key in Merill
+Warning--empty author and editor in Bartlett
+Warning--empty publisher in Bartlett
+Warning--empty year in Bartlett
+Warning--empty author and editor in Bethune
+Warning--empty publisher in Bethune
+Warning--empty year in Bethune
+Warning--empty author and editor in BushVera
+Warning--empty publisher in BushVera
+Warning--empty year in BushVera
+Warning--empty author and editor in Lewis
+Warning--empty publisher in Lewis
+Warning--empty year in Lewis
+Warning--empty author and editor in GillWhitford
+Warning--empty publisher in GillWhitford
+Warning--empty year in GillWhitford
+Warning--empty author and editor in Harper
+Warning--empty publisher in Harper
+Warning--empty year in Harper
+Warning--empty author and editor in LeaguePA
+Warning--empty publisher in LeaguePA
+Warning--empty year in LeaguePA
+Warning--empty author and editor in Merill
+Warning--empty publisher in Merill
+Warning--empty year in Merill
+Warning--empty author and editor in RuchoCommom
+Warning--empty publisher in RuchoCommom
+Warning--empty year in RuchoCommom
+Warning--empty author and editor in ShawReno
+Warning--empty publisher in ShawReno
+Warning--empty year in ShawReno
+Warning--empty author and editor in ThorburgvGingles
+Warning--empty publisher in ThorburgvGingles
+Warning--empty year in ThorburgvGingles
+Warning--empty author in VAREPORT
+You've used 15 entries,
+            2118 wiz_defined-function locations,
+            556 strings with 5452 characters,
+and the built_in function-call counts, 2895 in all, are:
+= -- 225
+> -- 56
+< -- 0
++ -- 29
+- -- 14
+* -- 237
+:= -- 386
+add.period$ -- 21
+call.type$ -- 15
+change.case$ -- 42
+chr.to.int$ -- 0
+cite$ -- 61
+duplicate$ -- 179
+empty$ -- 345
+format.name$ -- 14
+if$ -- 620
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 13
+newline$ -- 54
+num.names$ -- 6
+pop$ -- 130
+preamble$ -- 1
+purify$ -- 37
+quote$ -- 0
+skip$ -- 84
+stack$ -- 0
+substring$ -- 93
+swap$ -- 14
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 38
+warning$ -- 46
+while$ -- 7
+width$ -- 17
+write$ -- 96
+(There were 47 warnings)

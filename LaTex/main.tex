@@ -5,6 +5,7 @@
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{cite}
 \usepackage[margin=1.25in]{geometry}
 
 \lstset{
@@ -21,7 +22,9 @@ breaklines=true
 \maketitle
 
 \begin{abstract}
-Monte Carlo simulations have proved useful in redistricting legislation, where the simulation generates districting maps that are used to aproximate the state space of all possible plans. Two such algorithms, Markov Chain Monte Carlo (MCMC) and Sequential Monte Carlo (SMC), begin with a "seed" districting plan and iteratively generate new possible plans according to a set of provided criteria. This paper utilizes data generated with both MCMC and SMC algorithms to examine Alabama's 2020 congressional districting map, which was challenged for racial segregation. We employ Saporito and Maliniak's \hl{(year)} areal unit segregation measure ($S^{+/-}$) to quantitatively measure segregation in the orginial 2020 districting plan and our own algorithmically generated plans. We find that \hl{finish}
+
+Monte Carlo simulations have proved useful in redistricting legislation, where the simulation generates districting maps that are used to aproximate the state space of all possible plans. Two such algorithms, Markov Chain Monte Carlo (MCMC) and Sequential Monte Carlo (SMC), begin with a "seed" districting plan and iteratively generate new possible plans according to a set of provided criteria. This paper utilizes data generated with the MCMC algorithm to examine Alabama's 2020 congressional districting map, which was challenged for racial segregation. We employ Saporito and Maliniak's\cite{SAPORITO2022} Areal Unit Segregation measure ($S^{+/-}$) to quantitatively measure segregation in the orginial 2020 districting plan and our own algorithmically generated plans. We find that segregation scores associated Alabama's enacted 2020 distristricting plan are outliers to the distribution we generated, providing some evidence of gerrymandering. We also investigate the likelyhood of majority-minority and opportunity districts using a measure of Black Voting Age Population (BVAP), which indicates that a map with only one majority-minority district may be expected.
+
 \end{abstract}
 
 \section{Introduction}
@@ -29,29 +32,29 @@ Monte Carlo simulations have proved useful in redistricting legislation, where t
 \par 
 In the United States, congressional districts are created for the purpose of electing members to the House of Representatives. In this process, each state is apportioned a number of seats in the House based on it's population. The state is then divided into as many congressional districts as they are granted seats, where one representative may be elected from each district. Every 10 years, states redraw their congressional districts in a process called redistricting, which is intended to ensure that these districts remain a representative sample of voters as populations grow and change over time. However, districts may also be drawn in such a way that they are not representative of the state's population. When this is done purposfully (often in an effort to minimize the voting strength of certain demographic groups) a district is considered to be gerrymandered.
 \par
-Commonly, gerrmandering occurs when a demographic community is "packed" into a small number of districts so it's voting power is concentrated in these districts, or "cracked" between many districts so it's voting power is diluted across all districts. However, social scientists also know that demographic groups often cluster together naturally, forming natural pockets of high and low populations in a state \hl{cite}. This tendancy makes it difficult to tell whether a district has been gerrymandered based on look or population alone, and leads us to ask how we can systematically tell if a district has been gerrymandered. 
+Commonly, gerrmandering occurs when a demographic community is "packed" into a small number of districts so it's voting power is concentrated in these districts, or "cracked" between many districts so it's voting power is diluted across all districts. However, demographic groups often cluster together naturally, forming natural pockets of high and low populations in a state. This tendancy makes it difficult to tell whether a district has been gerrymandered based on look or population alone, and leads us to ask how we can systematically tell if a district has been gerrymandered. 
 \par
-One approach to answering this question relies on the use of Monte Carlo simulations, where districting maps are stochastically generated for analysis. \hl{These generated maps are used to approximate the sample space of redistricting plans in a given state, which can then be quantitatively analyzed to argue whether the enacted plan has been gerrymandered.} However, the issue of generating such a sample space is complex. The Metric Geometry and Gerrymandering Group (MGGG) of Tufts University proposed a Markov Chain Monte Carlo (MCMC) based algorithm to generate sample plans, where the algorithm takes a random walk across the sample space of districing plans. Key to this MCMC algorithm is its lack of memory—each step depends only on the last. Therefore each transformation generates a new map, and a representative space can be generated very quickly \hl{cite}. 
+One approach to answering this question relies on the use of Monte Carlo simulations, where districting maps are stochastically generated for analysis. These generated maps are used to approximate the sample space of redistricting plans in a given state, which can then be quantitatively analyzed to argue whether the enacted plan has been gerrymandered. However, the issue of generating such a sample space is complex. The Metric Geometry and Gerrymandering Group (MGGG) of Tufts University proposed a Markov Chain Monte Carlo (MCMC) based algorithm to generate sample plans, where the algorithm takes a random walk across the sample space of districing plans. Key to this MCMC algorithm is its lack of memory—each step depends only on the last. Therefore each transformation generates a new map, and a representative space can be generated very quickly \cite{DBLP:journals/corr/abs-1911-05725}. 
 \par
 Also key to the MCMC algorithm is exactly how it traverses from one map to the next. MGGG has recently proposed \emph{Recombination} (ReCom) for this process, where the algorithm combines the entirety of two districts and subsequently randomly splits them, creating an entirely new map. On the other hand, the \emph{Flip} proposal relies on flipping nodes of a spanning tree—in essence swapping the district that a single locality belongs to.
-MGGG argues that this Flip Proposal does not efficiently explore the space of all possible districting plans, as it has a tendency to draw non-compact plans unless tight constraints are imposed that significantly slow the process. Therefore, while ReCom may be computationally more expensive, it generates much more compact plans in fewer steps than Flip \hl{(DeFord et al, 2021)}. MGGG has made their MCMC with ReCom algorithm publicly available in the Python library \lstinline{GerryChain}. 
+MGGG argues that this Flip Proposal does not efficiently explore the space of all possible districting plans, as it has a tendency to draw non-compact plans unless tight constraints are imposed that significantly slow the process. Therefore, while ReCom may be computationally more expensive, it generates much more compact plans in fewer steps than Flip \cite{DBLP:journals/corr/abs-1911-05725}. MGGG has made their MCMC with ReCom algorithm publicly available in the Python library \lstinline{GerryChain}. 
 \par
-Similarly, the Algorithm-Assisted Redistricting Methodology group (ALARM) at Harvard University published \lstinline{Redist}, an open-sourced R package with comparable computational capabilities to \lstinline{GerryChain}. However, instead of Markov Chains, \lstinline{Redist} employs Sequential Monte Carlo (SMC) simulations. While MCMC strategies make small, sequential changes to one “seed” plan, SMC creates many different plans from scratch. The technique draws a random spanning tree on the given state, and selects an edge at random to split and create two sub trees. This step is repeated several times until the appropriate number of districts are created. ALARM states that this SMC strategy is more easily scalable to the kinds of large datasets required for state redistricting, and that it is more efficient \hl{(McCarten and Imani, 2020)}. In any sense, both GerryChain and Redist face limitations in that it is impossible to generate the complete state space of districting plans. 
+Similarly, the Algorithm-Assisted Redistricting Methodology group (ALARM) at Harvard University published \lstinline{Redist}, an open-sourced R package with comparable computational capabilities to \lstinline{GerryChain}. However, instead of Markov Chains, \lstinline{Redist} employs Sequential Monte Carlo (SMC) simulations. While MCMC strategies make small, sequential changes to one “seed” plan, SMC creates many different plans from scratch. The technique draws a random spanning tree on the given state, and selects an edge at random to split and create two sub trees. This step is repeated several times until the appropriate number of districts are created. ALARM states that this SMC strategy is more easily scalable to the kinds of large datasets required for state redistricting, and that it is more efficient \cite{mccartan2023sequential}. In any sense, both GerryChain and Redist face limitations in that it is impossible to generate the complete state space of districting plans. 
 
 \subsection{Redistricting Legislation} \label{legislation}
 When a legislative or congressional map is suspected to be gerrymandered, individuals or orgnaizations can contest the map in court. This places the complex task of determining whether a map has been gerrymandered on the shoulders of the court. Several landmark cases have layed the foundation for redistricting cases. 
 \par
-In \hl{Thornburg v. Gingles 478 U.S. 30 (1986)}, the Supreme Court unanimously ruled that several districts North Carolina violated section 2 of the Voting Rights Act (VRA) and established the \emph{Gingles test} as a framework for evaluating claims under Section 2. According to the Gingles test, plaintiffs must prove that a minority group constitutes a "single member district"\footnote{An electoral district represented by a single officeholder }, tends to vote similarly, and that the minority vote is outweighted by the majority vote. These conditions concern whether a minority community is "compact" enough to form a majority-minority district\footnote{An electoral district where majority of the population is of a single minority. May also be refered to as an opportunity district} and whether the minority community exhibits different voting patterns than other groups, criteria which are cited to this day.
+In \emph{Thornburg v. Gingles} \cite{ThorburgvGingles}, the Supreme Court unanimously ruled that several districts North Carolina violated section 2 of the Voting Rights Act (VRA) and established the \emph{Gingles test} as a framework for evaluating claims under Section 2. According to the Gingles test, plaintiffs must prove that a minority group constitutes a "single member district"\footnote{An electoral district represented by a single officeholder }, tends to vote similarly, and that the minority vote is outweighted by the majority vote. These conditions concern whether a minority community is "compact" enough to form a majority-minority district\footnote{An electoral district where majority of the population is of a single minority. May also be refered to as an opportunity district} and whether the minority community exhibits different voting patterns than other groups, criteria which are cited to this day.
 \par 
-The requirement of compactness is further discussed in \hl{Shaw v. Reno, 509 U.S 630 (1993)}, again in the state of North Carolina. When the state was instructed to add an additional majority-minority district to its map, the resulting district was described as "snake-like"  and "bizzare" by the Supreme Court for its non-compact shape. In its ruling, the Supreme Court stated that race may be taken into account when drawing districts, but it cannot be the sole factor. Despite this important ruling, the case did not well define a "highly iregugular" district, only claiming that the contested district was one. This allows for varring interpretations of the ruling in subsequent redustricting cases. Shaw v. Reno also asserted that state districts must be evaluated individually rather than as a whole, a sentiment later emphasized in \hl{Bush v. Vera, 517 U.S. 952 (1996)} and \hl{Bethune-Hill v. Virginia State Bd. of Elections, 580 U.S. XYZ (2017)}.
+The requirement of compactness is further discussed in \emph{Shaw v. Reno}\cite{ShawReno}, again in the state of North Carolina. When the state was instructed to add an additional majority-minority district to its map, the resulting district was described as "snake-like"  and "bizzare" by the Supreme Court for its non-compact shape. In its ruling, the Supreme Court stated that race may be taken into account when drawing districts, but it cannot be the sole factor. Despite this important ruling, the case did not well define a "highly iregugular" district, only claiming that the contested district was one. This allows for varring interpretations of the ruling in subsequent redustricting cases. Shaw v. Reno also asserted that state districts must be evaluated individually rather than as a whole, a sentiment later emphasized in \emph{Bush v. Vera}\cite{BushVera} and \emph{Bethune-Hill v. Virginia State Bd. of Elections}\cite{Bethune}.
 \par
-These cases, among others, have highlighted a need for a systematic means of detecting racial gerrymandering, eliminating problematic subjectivity in the matter. Merely using shape to determine segregation within districts (as in Shaw v. Reno) does not offer any insight into the true demographic or minority makeup of the district. Courts have also looked to the existance of majority-minority districts (also called opportunity districts) to assert the fairness of a districting plan. \hl{Bartlett v. Strickland, 556 U.S. 1 (2009)} formally argued that a minority group must constitute at least 50\% of of an opportunity districts voting age population for it to be required under Section 2. This has been interperated to mean that a majority-minority district must have at least 50\% minority voting age population. 
+These cases, among others, have highlighted a need for a systematic means of detecting racial gerrymandering, eliminating problematic subjectivity in the matter. Merely using shape to determine segregation within districts (as in \emph{Shaw v. Reno}) does not offer any insight into the true demographic or minority makeup of the district. Courts have also looked to the existance of majority-minority districts (also called opportunity districts) to assert the fairness of a districting plan. \emph{Bartlett v. Strickland}\cite{Bartlett} formally argued that a minority group must constitute at least 50\% of of an opportunity districts voting age population for it to be required under Section 2. This has been interperated to mean that a majority-minority district must have at least 50\% minority voting age population. 
 \par
-As of early 2023, 73 cases of racial and/or partisan gerrymanders have been filed across 27 states, many of which remain pending. In several cases, Monte Carlo simulations were used as testimony. For example, in \hl{Common Cause v. Rucho}, Dr. Jonathan Mattingly generated an ensemble of simulated North Carolina districting plans with a Markov Chain algorithm. His partisan analysis of the ensemble revealed that only .36\% of plans yeilded a congressional delegation of 9 Republicans and 4 Democrats, the outcome of the enaced 2016 plans. Mattingly concluded that the 2016 plan was gerrymandered,  and the same analysis was used in \hl{Harper v. Lewis}. Related analyses were used in \hl{Common cause v. Lewis}, a claim of partistan gerrymandering against North Carolina's 2017 map, and \hl{Gill v Whitford}, where statistisians at the University of Michigan and Duke University (including Mattingly) conclude that Wisconsin's 2011 districting plan was very likely gerrymandered. Mood Duchin of Tuft's University offered equivilent testimony in \hl{Leage of Women Voters of Pennsylvania v. Commonwealth of Pennslyvania}, identifying Pennsylvania's 2011 congressional map as a partisan outlier \hl{can cite this}. While \emph{Common Cause v. Rucho} and \emph{Gill v Whitford} were ultimately dismissed by the Supreme Court (which held that partisan gerrymandering claims are nonjusticable), it is evident that Monte Carlo simulation analysis offers an important means of quantifying gerrymandering.  
+As of early 2023, 73 cases of racial and/or partisan gerrymanders have been filed across 27 states, many of which remain pending. In several cases, Monte Carlo simulations were used as testimony. For example, in \emph{Common Cause v. Rucho} \cite{RuchoCommom}, Dr. Jonathan Mattingly generated an ensemble of simulated North Carolina districting plans with a Markov Chain algorithm. His partisan analysis of the ensemble revealed that only .36\% of plans yeilded a congressional delegation of 9 Republicans and 4 Democrats, the outcome of the enaced 2016 plans. Mattingly concluded that the 2016 plan was gerrymandered,  and the same analysis was used in \emph{Harper v. Lewis}\cite{Harper}. Related analyses were used in \emph{Common cause v. Lewis}\cite{Lewis}, a claim of partistan gerrymandering against North Carolina's 2017 map, and \emph{Gill v Whitford}\cite{GillWhitford}, where statistisians at the University of Michigan and Duke University (including Mattingly) conclude that Wisconsin's 2011 districting plan was very likely gerrymandered. Mood Duchin of Tuft's University offered equivilent testimony in \emph{Leage of Women Voters of Pennsylvania v. Commonwealth of Pennslyvania}\cite{LeaguePA}, identifying Pennsylvania's 2011 congressional map as a partisan outlier\cite{VAREPORT}. While \emph{Common Cause v. Rucho}\cite{RuchoCommom} and \emph{Gill v Whitford}\cite{GillWhitford} were ultimately dismissed by the Supreme Court (which held that partisan gerrymandering claims are nonjusticable), it is evident that Monte Carlo simulation analysis offers an important means of quantifying gerrymandering.  
 \par 
-When it comes to racial gerrymandering, a similar approach can be taken with these algorithms, though a means of quantifying racial segregation is neccesary. In response to the afformentioned \emph{Bethune-Hill v. Virginia BoE} case, MGGG released a report on the several proposed districting plans for Pennsylvania compared to a MCMC generated emsemble. As the case was brought to court on the bases of deliberately elevated BVAP levels in several districts, MGGG applied the same measure of segregation in their analysis (though they are careful to emphasize that BVAP alone is not enough to identify VRA complience). The case was closed and Virginia was instructed to use a redrawn map for its 2019 elections, but it raised several questions about the legality of using a targeted BVAP score in districting as well as questions about the importance of intentions versus outcomes in districting. While these questions remain in the hands of the court, further analysis on the use of BVAP to quantify segregation may be of use.
+When it comes to racial gerrymandering, a similar approach can be taken with these algorithms, though a means of quantifying racial segregation is neccesary. In response to the afformentioned \emph{Bethune-Hill v. Virginia BoE}\cite{Bethune} case, MGGG released a report on the several proposed districting plans for Pennsylvania compared to a MCMC generated emsemble. As the case was brought to court on the bases of deliberately elevated BVAP levels in several districts, MGGG applied the same measure of segregation in their analysis (though they are careful to emphasize that BVAP alone is not enough to identify VRA complience). The case was closed and Virginia was instructed to use a redrawn map for its 2019 elections, but it raised several questions about the legality of using a targeted BVAP score in districting as well as questions about the importance of intentions versus outcomes in districting. While these questions remain in the hands of the court, further analysis on the use of BVAP to quantify segregation may be of use.
 \par 
-Currently, one key case--\hl{Merril v. Milligan}--remains open in the Supreme Court. This case challenges the congressional map passed in Alabama following the 2020 census on the grounds that only 1 of 7 districts have a black majority, despite the fact that 27\% of Alabama's residents are black (see \hyperref[fig 1]{Figure 1}). According to plaintiff's, this is clear evidence that there should be 2 black opportunity districts in the state. The state maintians that the VRA does not \emph{obligate} states to redistrict based on race, and that \emph{Gingles} requires a "race-neutral benchmark" that prevents easily drawing a second opportunity district. In the 2022 oral arguments, Justice Kagan asserts that the case should be a "slam-dunk" in favor of the Plaintiffs based on existing precedents and that the defendnats are asking the court to "change the way [courts] look at Section 2 and its application" \hl{(all from oral arguments)}. Even so, the case remains open (with an expected decision in spring or summer of 2023), with landmark implications for redistricting law as a whole. Already, several redistricing cases have been stayed pending a decision in \emph{Merril v. Milligan}, with potential consequences to cases in Georgia, Lousisiana, Texas, North Dakota, and Washington.
+Currently, one key case--\emph{Merril v. Milligan}--remains open in the Supreme Court. This case challenges the congressional map passed in Alabama following the 2020 census on the grounds that only 1 of 7 districts have a black majority, despite the fact that 27\% of Alabama's residents are black (see \hyperref[fig 1]{Figure 1}). According to plaintiff's, this is clear evidence that there should be 2 black opportunity districts in the state. The state maintians that the VRA does not \emph{obligate} states to redistrict based on race, and that \emph{Gingles} requires a "race-neutral benchmark" that prevents easily drawing a second opportunity district. In the 2022 oral arguments, Justice Kagan asserts that the case should be a "slam-dunk" in favor of the Plaintiffs based on existing precedents and that the defendnats are asking the court to "change the way [courts] look at Section 2 and its application" \cite{Merill}. Even so, the case remains open (with an expected decision in spring or summer of 2023), with landmark implications for redistricting law as a whole. Already, several redistricing cases have been stayed pending a decision in \emph{Merril v. Milligan}, with potential consequences to cases in Georgia, Lousisiana, Texas, North Dakota, and Washington.
 
 \begin{figure}[h]\label{fig 1}
     \centering
@@ -64,14 +67,15 @@ Kosuke Imai of ALARM and Moon Duchin of MGGG both offered expert testimony on th
  
 \subsection{The Areal Unit Segregation ($S^{+/-}$) Measure}\label{AUS}
 
-In many of the cases above, including \emph{Merril v. Milligan}, a measure of BVAP is used to quantify minority populations within districts. This score is perhaps compares the minority population in a district to the districts population as a whole, and may not account for the tendency of minority populations to cluster in a state. It becomes challenging to identify \emph{segregation} that occures because of gerrymandering, or segregation that is "natural" to the minority populations distribution across a state. When it comes to quantifying segregation specifically, social scientists have been making use of areal metrics to calculate the spacial distribution of minority populations \hl{(Whitte, 1983; Reardon and O'sullivan, 2004; Echernique and Fryer Jr, 2007)}. Saporito and Maliniak (2022) build upon these measures by implimenting a nearest-neighbors algorithm to the metric, defining what they call an Areal Unit Segregation Measure ($S^{+/-}$).
+In many of the cases above, including \emph{Merril v. Milligan}, a measure of BVAP is used to quantify minority populations within districts. This score is perhaps compares the minority population in a district to the districts population as a whole, and may not account for the tendency of minority populations to cluster in a state. It becomes challenging to identify \emph{segregation} that occures because of gerrymandering, or segregation that is "natural" to the minority populations distribution across a state.
+Saporito and Maliniak attempt to account for this natural segregation by by implimenting a nearest-neighbors algorithm to a segregation metric, defining what they call an Areal Unit Segregation Measure ($S^{+/-}$)\cite{SAPORITO2022}.
 \par
-A ($S^{+/-}$) score contextualizes a minority population in its local geogrpahic region, relying on the idea that "the racial composition of the nearest N neighbors of any given district’s residents should be, on average, very similar to the racial composition of the district" \hl{()}. By comparing the percent of a districts residents who are black to the percent of the districts N nearest neighbors that are black, we can determine whether the district has been segregated. In this case, a positive ($S^{+/-}$) score indicates a packed district, a score of 0 is non-segregated, and a negative score indicates a cracked district. Determining the racial composition of the environment a district is situated in requires defining a "local environment". Saporito and Maliniak do so by aggregating the racial makeup of the N nearest neighbors to every resident of a potential district.
+A ($S^{+/-}$) score contextualizes a minority population in its local geogrpahic region, relying on the idea that "the racial composition of the nearest N neighbors of any given district’s residents should be, on average, very similar to the racial composition of the district"\cite{SAPORITO2022}. By comparing the percent of a districts residents who are black to the percent of the districts N nearest neighbors that are black, we can determine whether the district has been segregated. In this case, a positive ($S^{+/-}$) score indicates a packed district, a score of 0 is non-segregated, and a negative score indicates a cracked district. Determining the racial composition of the environment a district is situated in requires defining a "local environment". Saporito and Maliniak do so by aggregating the racial makeup of the N nearest neighbors to every resident of a potential district.
 \par
 We make use of Saporito and Maliniak's ($S^{+/-}$) measure in our analysis, and compare these scores bvap. It may not be clear whether one score is inherently better than another, but each provides a different persepctive on the issue of racial gerrymandering.
 
 \section{Methods}\label{methods}
-This paper utilizes both MGGG's GerryChain algorithm and the $S^{+/-}$ measure to evaluate segregation within Alabama's 2020 congressional districting map. We generate ensembles of districting plans according to Alabama's state criteria, and calculate segregation scores for each of these maps. In section 2.1, we discuss the legal constraints on congresssional districts and our specific methods of generation. In the following section 2.2, we discuss and confirm convergence of our MCMC generated ensemble of maps. In section 3, we apply $S^{+/-}$ and BVAP measures to our ensembles as well as Alabama's enacted 2020 plan. In section 4 we consider the implications of our data in section well as potential pitfalls to the methodology and areas for future research.
+This paper utilizes both MGGG's GerryChain algorithm and the $S^{+/-}$ measure to evaluate segregation within Alabama's 2020 congressional districting map. We generate ensembles of districting plans according to Alabama's state criteria, and calculate segregation scores for each of these maps. In section 2.1, we discuss the legal constraints on congresssional districts and our specific methods of generation. In the following section 2.2, we discuss and confirm convergence of our MCMC generated ensemble of maps. In section 3.1, we apply $S^{+/-}$ and BVAP measures to our ensembles as well as Alabama's enacted 2020 plan. In section 3.2, we consider the likelyhood of majority-minority and opportunity districts. We conclude in section 4, discussing implications of our data as well as potential pitfalls to the methodology and areas for future research.
 
 \subsection{Map Generation}\label{generation}
 
@@ -92,7 +96,7 @@ Using MGGG’s GerryChain library and ReCom proposal, we generated 1,000,000 dis
 \par
 A total of just over 1M distinct maps were generated. For each of the 7 districts in each of these plans, we calculated an $S^{+/-}$ score according to Saporito and Maleniak’s quantification, resulting in over 7M individual segregation scores. Data for these calculations comes from the 2020 US census, and includes geographies for voting tabulation districts as well as population statistics in these localities. 
 
-\begin{figure}[t]\label{iterative maps}
+\begin{figure}[h]\label{iterative maps}
     \centering
     \includegraphics[scale=.7]{images/changing_maps.png}
     \caption{\textbf{Iterative Maps} 5 iterations of generated maps, left to right. Note the subtle boundary changes}
@@ -100,20 +104,20 @@ A total of just over 1M distinct maps were generated. For each of the 7 district
 
 \begin{figure}[h]\label{diverge 1}
     \centering
-    \includegraphics[scale=.8]{images/maps_1.png}
+    \includegraphics[scale=.7]{images/maps_1.png}
     \caption{\textbf{Diverging Maps 1} 
     Left: seed map. Right: 1 iteration past the seed map on two diverging paths.}
 \end{figure}
 
 \begin{figure}[h]\label{diverge 10}
     \centering
-    \includegraphics[scale=.8]{images/maps_10.png}
+    \includegraphics[scale=.7]{images/maps_10.png}
     \caption{\textbf{Diverging Maps 2} Left: seed map. Right: 100 iteration past the seed map on two diverging paths.}
 \end{figure}
 
 \begin{figure}[h]\label{diverge 100}
     \centering
-    \includegraphics[scale=.8]{images/maps_100.png}
+    \includegraphics[scale=.7]{images/maps_100.png}
     \caption{\textbf{Diverging Maps 3} Left: seed map. Right: 100 iteration past the seed map on two diverging paths.}
 \end{figure}
 
@@ -123,60 +127,106 @@ A total of just over 1M distinct maps were generated. For each of the 7 district
 
 For the generated ensemble of plans to be appropriate for analysis, the distribution of $S^{+/-}$ scores must demonstrate convergence. We confirm this convergence by observing the distributions at increasing percentages of the complete number of iterations. As the distribution stabilizes, we should observe minimal change with increasing iterations. To compare segregation scores across districts, we have indexed (sorted) the 7 districts from the one with lowest $S^{+/-}$ score to the highest $S^{+/-}$ (from left to right in our figures).
 \par
-In \hyperref[fig 2]{Figure 2}, we display box plots of each indexed district at logarithmic intervals. We can see that the plots display less change as iterations increase, indicating that the distribution is stabilizing. We show similar results in \hyperref[fig 3]{Figure 3}, instead utilizing BVAP scores as our measure of segregation. See \hyperref[convergence appendix]{Appendix A} for more figures regarding distribution convergence.
+In \hyperref[fig 6]{Figure 6}, we display box plots of each indexed district at logarithmic intervals. We can see that the plots display less change as iterations increase, indicating that the distribution is stabilizing. We show similar results in \hyperref[fig 7]{Figure 7}, instead utilizing BVAP scores as our measure of segregation. See \hyperref[convergence appendix]{Appendix A} for more figures regarding distribution convergence.
 \
-\begin{figure}[h]\label{fig 2}
+\begin{figure}[h]\label{fig 6}
     \centering
-    \includegraphics[scale=.5]{images/asu_bxp_convergence.png}
-    \caption{caption}
+    \includegraphics[scale=.45]{images/asu_bxp_convergence.png}
+    \caption{\textbf{Areal Unit Segregation Convergence} Box plots of districts' AUS score indexed 1 through 7 at increasing chain lengths.}
 \end{figure}
 
-\begin{figure}[h]\label{fig 3}
+\begin{figure}[h]\label{fig 7}
     \centering
-    \includegraphics[scale=.5]{images/bvap_bxo_convergence.png}
-    \caption{caption}
+    \includegraphics[scale=.45]{images/bvap_bxo_convergence.png}
+    \caption{\textbf{Black Voting Age Population Convergence} Box plots of districts' BVAP score indexed 1 through 7 at increasing chain lengths.}
 \end{figure}
 
+\pagebreak
 \section{Results}\label{results}
 
 \subsection{Contextualizing Alabama's 2020 Enacted Legeslative Districts}
 
 
-\hyperref[fig 8]{Figure 8} and \hyperref[fig 9]{Figure 9} compares the $S^{+/-}$ and BVAP scores of Alabama's 7 legeslative districs enacted in 2020 with our generated ensembles. The original scores were indexed in the same mannor as the generated districts, from lowest to highest. We can see clearly that when we quantify segregation with either metric, the original score indexted 7 is an extreme outlier to our distributions.      
-
-
+\hyperref[fig 8]{Figure 8} and \hyperref[fig 9]{Figure 9} compares the $S^{+/-}$ and BVAP scores of Alabama's 7 legeslative districs enacted in 2020 with our generated ensembles. The original scores were indexed in the same mannor as the generated districts, from lowest to highest. We can see clearly that when we quantify segregation with either metric, the original score indexed 7 is an extreme outlier to our distributions.      
 
 \begin{figure}[h]\label{fig 8}
     \centering
-    \includegraphics[scale=.5]{images/asu_compare.png}
-    \caption{caption}
+    \includegraphics[scale=.45]{images/asu_compare.png}
+    \caption{\textbf{AUS Scores for the enacted 2020 Plan} vs. our generated ensemble}
 \end{figure}
 
 \begin{figure}[h]\label{fig 9}
     \centering
-    \includegraphics[scale=.5]{images/bvap_compare.png}
-    \caption{caption}
+    \includegraphics[scale=.45]{images/bvap_compare.png}
+    \caption{\textbf{BVAP Scores for the enacted 2020 Plan} vs. our generated ensemble}
 \end{figure}
+
+\pagebreak
+
+\par
+\hyperref[fig 10]{Figure 10} places these two measure in direct comparison with one another. Each dataset was individually standardized for an accurate comparison across differing metrics. Both measures of segregation follow the same trends, though Areal Unit Segregation appears to result in more extreme scores than BVAP.
+\par
+We display the same standardized data in \hyperref[fig 11]{Figure 11}. The distribution of Areal Unit Segregation does allow for slightly more extreme scores, both positively and negatively, and its peak is also slightly greater than that of BVAP. While this paper does not attempt to explain the reasoning behind these distributions, only to present and compare them, we can propose that the distribution of BVAP represents the tendancy of minority populations to cluster naturally. 
+
+\begin{figure}[h]\label{fig 10}
+    \centering
+    \includegraphics[scale=.45]{images/standardized_compare.png}
+    \caption{\textbf{Standardize ASU and BVAP Scores} Scores for the enacted 2020 plan vs our generated ensemble}
+\end{figure}
+
+\begin{figure}[h]\label{fig 11}
+    \centering
+    \includegraphics[scale=.35]{images/compare_kde.png}
+    \caption{\textbf{Standardized Density Plots} GeneratedASU and BVAP distributions}
+\end{figure}
+
+\pagebreak
+
+\subsection*{Black Voting Age Population and Opportunity Districts}
+
+The mail point of contention in \emph{Merril v. Milligan} was the number of majority-minority districts in Alabama's plan. While Duchin drew many maps with multiple majority-mionrity plans, Imai did not, differing in their algorithm's handling of race. 
+\par
+Our ensemble generated plans with only either one, or no black majority districts. However, a district does not neccesarily need to be majority-minority to be considered represntative. It is commonly acknowleded that a BVAP score of 37\% or higher drastically increases the chances that the district elects the black candidate of choice. MGGG shows that "32 out of 34  U.S. congressional districts with at least 7\% BVAP had Representatives in the 115th Congress who belong to the Congressional Black Caucus, and the ratio drops off precipitously below that level" \cite{VAREPORT.} Then, we may wonder how many districts are generated in each plan that meet this threshold. 
+\par
+\hyperref[fig 12]{Figure 12} plots a simple histagram of all 7M+ BVAP scores. Over half (56.63\%) of plans resulted in 1 district with a BVAP > 37\%. 28.75\% had none, and 14.6\% 2. Only 28 plans resulted in 3 districts of this threshold, making it a negligable case. 
+
+\begin{figure}[h]\label{fig 12}
+    \centering
+    \includegraphics*[scale=.6]{images/bvap_freq.png}
+    \caption{\textbf{Frequency of Opportunity Districts} in our generated ensemble}
+\end{figure}
+
 
 \section{Conclusion}
+We have demonstrated that 1. we are confident in the representativeness of our generated sample of districting plans, 2. both the AUS and BVAP scores for district 7 of Alabama's 2020 enacted plan are outliers to the distribution, and 3. districting maps with only 1 majority-minority or opportunity district are most common in our sample. The increased AUS and BVAP scores of district 7 have depressed scores in several of the remaining districts as well. These claims provide some evidence that the original, enacted district 7 may have been gerrymandered, but offers little evidence that maps with two majority-minority districts are easily and commonly drawn. More research is needed to make true claims about the VRA compliance of Alabama's 2020 enacted districting plan. 
+\par
+We also suggest more consideration for the comparison of BVAP and ASU scores and their applications. For instance, whether the extremity of ASU scores is more or less representative of the "true" segregation of a district. Similarly, just as we know BVAP of 37\% to be a crucial cuttoff point for black representation, is there a corresponding ASU value?
+\par 
+Our generation methods did not consider race in any capacity; maps were generated without forcing any number of majority-minority districts, BVAP levels, or opportunity districs. This resulted in our ensemble only generating maps with at most one majority-minority district, and most often only one opportunity district. However, additional constraints on minority populations may result in different outcomes, and are worth exploring in relation to ASU scores. For instance, if we ensure that our maps have two majority-minority distrits, how does this refelct in their Areal Unit Segregation Meausres?
+\par
+Though it is not within the scope of this paper to argue what constitutes VRA compliance, we have demonstrated that an emseble of valid alternative plans can be used for comparing and analyzing a true districting map. There are, however, many more considerations at play when drawing these maps, and our MCMC algorithm can only provide insight to some of these. As legistlation and technology evolves, we may better be able to detect gerrymandering and provide the best representation for minority communities.
 
+\pagebreak
+\bibliography{GerryChain.bib}
+\bibliographystyle{plain}
+
+\pagebreak
 \appendix
-\section{}\label{convergence appendix}
+\section{Convergence Analysis}\label{Appendix A}
 
-\begin{figure}
+\begin{figure}[h]
     \centering
-    \includegraphics[scale=.6]{images/asu_kde_convergence.png}
+    \includegraphics[scale=.4]{images/asu_kde_convergence.png}
+    \caption{\textbf{AUS Cumulative Density} Each Index district is displayed with cumulative density functions at logarithmic steps. Red lines represent the last step of the generation progess, black the previous step, and blue all others. Convergence is indicated by near-indistinguishable red and black lines.}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[scale=.6]{images/bvap_kde_convergence.png}
+    \includegraphics[scale=.45]{images/bvap_kde_convergence.png}
+    \caption{\textbf{BVAP Cumulative Density} Each Index district is displayed with cumulative density functions at logarithmic steps. Red lines represent the last step of the generation progess, black the previous step, and blue all others. Convergence is indicated by near-indistinguishable red and black lines.}
+
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=.6]{images/asu_hist_convergence.png}
-\end{figure}
 
 
 \end{document}
